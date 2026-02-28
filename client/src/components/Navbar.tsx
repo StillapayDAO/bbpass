@@ -15,7 +15,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-export default function Navbar() {
+function Navbar() {
   const { user, isAuthenticated } = useAuth();
   const [location, navigate] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -182,3 +182,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export { Navbar };
