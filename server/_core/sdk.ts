@@ -30,11 +30,27 @@ const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserI
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
+    const hasOAuthUrl = ENV.oAuthServerUrl && ENV.oAuthServerUrl.length > 0;
+    console.log(
+      `[OAuth] ${hasOAuthUrl ? "Initialized" : "⚠️ NOT CONFIGURED"} with baseURL:`,
+      ENV.oAuthServerUrl || "MISSING"
+    );
+    
+    if (!hasOAuthUrl) {
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "\n❌ [OAuth] Configuration Missing!\n" +
+          "OAUTH_SERVER_URL environment variable is not set.\n\n" +
+          "To fix this:\n" +
+          "1. Copy .env.example to .env.local\n" +
+          "2. Update the OAuth configuration with your Manus OAuth server details\n" +
+          "3. Restart the development server\n"
+        );
+      } else {
+        console.error(
+          "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
+        );
+      }
     }
   }
 
