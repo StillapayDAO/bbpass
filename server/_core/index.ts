@@ -1,4 +1,13 @@
 import "dotenv/config";
+import path from "path";
+import { fileURLToPath } from "url";
+
+// Ensure .env.local is loaded
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const envPath = path.resolve(__dirname, "../../.env.local");
+const { config } = await import("dotenv");
+config({ path: envPath });
+
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -28,6 +37,13 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  // Log environment configuration on startup
+  console.log("[Server] Environment variables loaded:");
+  console.log(`  NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`  OAUTH_SERVER_URL: ${process.env.OAUTH_SERVER_URL || "NOT SET"}`);
+  console.log(`  APP_ID: ${process.env.VITE_APP_ID ? "SET" : "NOT SET"}`);
+  console.log(`  DATABASE_URL: ${process.env.DATABASE_URL ? "SET" : "NOT SET"}`);
+
   const app = express();
   const server = createServer(app);
   // Configure body parser with larger size limit for file uploads
