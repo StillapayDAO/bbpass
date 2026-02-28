@@ -29,26 +29,28 @@ const GET_USER_INFO_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfo`;
 const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserInfoWithJwt`;
 
 class OAuthService {
+  private isConfigured: boolean;
+
   constructor(private client: ReturnType<typeof axios.create>) {
-    const hasOAuthUrl = ENV.oAuthServerUrl && ENV.oAuthServerUrl.length > 0;
+    this.isConfigured = ENV.oAuthServerUrl && ENV.oAuthServerUrl.length > 0;
     console.log(
-      `[OAuth] ${hasOAuthUrl ? "Initialized" : "⚠️ NOT CONFIGURED"} with baseURL:`,
+      `[OAuth] ${this.isConfigured ? "✓ Initialized" : "⚠️ NOT CONFIGURED"} with baseURL:`,
       ENV.oAuthServerUrl || "MISSING"
     );
     
-    if (!hasOAuthUrl) {
+    if (!this.isConfigured) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "\n❌ [OAuth] Configuration Missing!\n" +
+        console.warn(
+          "\n⚠️ [OAuth] Configuration Missing!\n" +
           "OAUTH_SERVER_URL environment variable is not set.\n\n" +
-          "To fix this:\n" +
-          "1. Copy .env.example to .env.local\n" +
-          "2. Update the OAuth configuration with your Manus OAuth server details\n" +
+          "OAuth functionality will be limited. To enable OAuth:\n" +
+          "1. Add OAUTH_SERVER_URL to your environment variables\n" +
+          "2. Ensure the OAuth server is running at that URL\n" +
           "3. Restart the development server\n"
         );
       } else {
-        console.error(
-          "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
+        console.warn(
+          "[OAuth] WARNING: OAUTH_SERVER_URL is not configured. OAuth features will not work."
         );
       }
     }
@@ -63,6 +65,10 @@ class OAuthService {
     code: string,
     state: string
   ): Promise<ExchangeTokenResponse> {
+    if (!this.isConfigured) {
+      throw new Error("OAuth is not configured. Set OAUTH_SERVER_URL environment variable.");
+    }
+
     const payload: ExchangeTokenRequest = {
       clientId: ENV.appId,
       grantType: "authorization_code",
@@ -81,6 +87,10 @@ class OAuthService {
   async getUserInfoByToken(
     token: ExchangeTokenResponse
   ): Promise<GetUserInfoResponse> {
+    if (!this.isConfigured) {
+      throw new Error("OAuth is not configured. Set OAUTH_SERVER_URL environment variable.");
+    }
+
     const { data } = await this.client.post<GetUserInfoResponse>(
       GET_USER_INFO_PATH,
       {
